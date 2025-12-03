@@ -145,6 +145,20 @@ const getTaoyuanWeather = async (req, res) => {
   await fetchAndSendWeather(res, "桃園市");
 };
 
+/**
+ * 取得宜蘭天氣預報
+ */
+const getYilanWeather = async (req, res) => {
+  await fetchAndSendWeather(res, "宜蘭縣");
+};
+
+/**
+ * 取得臺北天氣預報
+ */
+const getTaipeiWeather = async (req, res) => {
+  await fetchAndSendWeather(res, "臺北市");
+};
+
 // Routes
 app.get("/", (req, res) => {
   res.json({
@@ -152,6 +166,8 @@ app.get("/", (req, res) => {
     endpoints: {
       kaohsiung: "/api/weather/kaohsiung",
       taoyuan: "/api/weather/taoyuan",
+      yilan: "/api/weather/yilan",
+      taipei: "/api/weather/taipei",
       health: "/api/health",
     },
   });
@@ -166,6 +182,12 @@ app.get("/api/weather/kaohsiung", getKaohsiungWeather);
 
 // 取得桃園天氣預報
 app.get("/api/weather/taoyuan", getTaoyuanWeather);
+
+// 取得宜蘭天氣預報
+app.get("/api/weather/yilan", getYilanWeather);
+
+// 取得臺北天氣預報
+app.get("/api/weather/taipei", getTaipeiWeather);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
