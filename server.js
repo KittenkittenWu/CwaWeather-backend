@@ -20,7 +20,12 @@ app.use(express.urlencoded({ extended: true }));
  * CWA 氣象資料開放平臺 API
  * 使用「一般天氣預報-今明 36 小時天氣預報」資料集
  */
-const getKaohsiungWeather = async (req, res) => {
+/**
+ * 通用天氣資料取得與回應函式
+ * @param {Object} res - Express Response Object
+ * @param {String} locationName - 欲查詢的縣市名稱 (例如: "高雄市", "桃園市")
+ */
+const fetchAndSendWeather = async (res, locationName) => {
   try {
     // 檢查是否有設定 API Key
     if (!CWA_API_KEY) {
@@ -37,18 +42,18 @@ const getKaohsiungWeather = async (req, res) => {
       {
         params: {
           Authorization: CWA_API_KEY,
-          locationName: "宜蘭縣",
+          locationName: locationName,
         },
       }
     );
 
-    // 取得高雄市的天氣資料
+    // 取得指定縣市的天氣資料
     const locationData = response.data.records.location[0];
 
     if (!locationData) {
       return res.status(404).json({
         error: "查無資料",
-        message: "無法取得高雄市天氣資料",
+        message: `無法取得${locationName}天氣資料`,
       });
     }
 
@@ -107,7 +112,7 @@ const getKaohsiungWeather = async (req, res) => {
       data: weatherData,
     });
   } catch (error) {
-    console.error("取得天氣資料失敗:", error.message);
+    console.error(`取得${locationName}天氣資料失敗:`, error.message);
 
     if (error.response) {
       // API 回應錯誤
@@ -126,12 +131,27 @@ const getKaohsiungWeather = async (req, res) => {
   }
 };
 
+/**
+ * 取得高雄天氣預報
+ */
+const getKaohsiungWeather = async (req, res) => {
+  await fetchAndSendWeather(res, "高雄市");
+};
+
+/**
+ * 取得桃園天氣預報
+ */
+const getTaoyuanWeather = async (req, res) => {
+  await fetchAndSendWeather(res, "桃園市");
+};
+
 // Routes
 app.get("/", (req, res) => {
   res.json({
     message: "歡迎使用 CWA 天氣預報 API",
     endpoints: {
       kaohsiung: "/api/weather/kaohsiung",
+      taoyuan: "/api/weather/taoyuan",
       health: "/api/health",
     },
   });
@@ -143,6 +163,9 @@ app.get("/api/health", (req, res) => {
 
 // 取得高雄天氣預報
 app.get("/api/weather/kaohsiung", getKaohsiungWeather);
+
+// 取得桃園天氣預報
+app.get("/api/weather/taoyuan", getTaoyuanWeather);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
